@@ -62,10 +62,10 @@ void RFduinoBLE_onDisconnect()
 void RFduinoBLE_onReceive(char *data, int len)
 {
   // if the first byte is 0x01 / on / true
-  for(int i= 0;i<len; i++)
-  {
-    Serial.println(data[i]);
-  }
+  //for(int i= 0;i<len; i++)
+  //{
+  //  Serial.println(data[i]);
+  //}
   if (data[0])
   {
     if (nfc.tagPresent())
