@@ -1,30 +1,35 @@
 /*
 UART_DEFAULT_RX_PIN 0
 UART_DEFAULT_TX_PIN 1
-*/
 
+for RFduino
+PIN_WIRE_SDA         (6u)
+PIN_WIRE_SCL         (5u)
+*/
+#define I2C
 
 #include <RFduinoBLE.h>
 
-#include <SPI.h>
-#include <PN532_SPI.h>
+#ifdef UART
+#include <PN532_HSU.h>
 #include <PN532.h>
 #include <NfcAdapter.h>
 
-PN532_SPI pn532spi(SPI, 10);
-NfcAdapter nfc = NfcAdapter(pn532spi);
-/*
-#else
+PN532_HSU pn532uart(Serial);
+PN532 pn532element(pn532uart);
+NfcAdapter nfc = NfcAdapter(pn532uart);
 
+#else
 #include <Wire.h>
 #include <PN532_I2C.h>
 #include <PN532.h>
 #include <NfcAdapter.h>
 
 PN532_I2C pn532_i2c(Wire);
+PN532 pn532element(pn532_i2c);
 NfcAdapter nfc = NfcAdapter(pn532_i2c);
 #endif
-*/
+
 
 void setup(void) {
     //Serial.begin(9600);
@@ -44,7 +49,7 @@ void setup(void) {
 }
 
 void loop(void) {
-    Serial.println("\nScan a NFC tag\n");
+    //Serial.println("\nScan a NFC tag\n");
     if (nfc.tagPresent())
     {
         NfcTag tag = nfc.read();
@@ -56,23 +61,30 @@ void loop(void) {
 
 void RFduinoBLE_onDisconnect()
 {
-  // don't leave the led on if they disconnect  
+
 }
 
 void RFduinoBLE_onReceive(char *data, int len)
 {
+  uint32_t versionnumber;
+  uint8_t versionnum[4];
   // if the first byte is 0x01 / on / true
-  //for(int i= 0;i<len; i++)
-  //{
-  //  Serial.println(data[i]);
-  //}
+  for(int i= 0;i<len; i++)
+  {
+    //Serial.println(data[i]);
+  }
   if (data[0])
   {
+          versionnumber = 5;
+          versionnum[0] = 5;
+          versionnumber = pn532element.getFirmwareVersion();
+          //RFduinoBLE.send(versionnum,4); // send out value 2 to inform about nfc detection    
+          RFduinoBLE.sendInt(versionnumber);
     if (nfc.tagPresent())
     {
-        NfcTag tag = nfc.read();
-        RFduinoBLE.send(1); // send out value 2 to inform about nfc detection
-        tag.print();
+//        NfcTag tag = nfc.read();
+//        RFduinoBLE.send(1); // send out value 2 to inform about nfc detection
+//        tag.print();          
     }
   }
   else
