@@ -30,10 +30,14 @@ PN532 pn532element(pn532_i2c);
 NfcAdapter nfc = NfcAdapter(pn532_i2c);
 #endif
 
+void bleSendString(String sendstring);
 
 void setup(void) {
-    //Serial.begin(9600);
-    //Serial.println("NDEF Reader");
+  #ifdef I2C
+    Serial.begin(9600);
+    Serial.println("NDEF Reader");
+    
+  #endif
     
     
     // this is the data we want to appear in the advertisement
@@ -49,13 +53,26 @@ void setup(void) {
 }
 
 void loop(void) {
-    //Serial.println("\nScan a NFC tag\n");
+/*  
+  #ifdef I2C
+
+    uint32_t versionnumber;
+    versionnumber = pn532element.getFirmwareVersion();
+    Serial.print("\nVers.Num:");
+    Serial.println(versionnumber);
+    Serial.println("\nScan a NFC tag\n");    
+    if(nfc.tagPresent())
+      Serial.println("\nTag detected\n");        
+    else
+      Serial.println("\nNo tag detected\n");        
+  #endif  
     if (nfc.tagPresent())
     {
         NfcTag tag = nfc.read();
         RFduinoBLE.send(1); // send out value 2 to inform about nfc detection
         tag.print();
     }
+*/    
     delay(5000);
 }
 
@@ -67,7 +84,8 @@ void RFduinoBLE_onDisconnect()
 void RFduinoBLE_onReceive(char *data, int len)
 {
   uint32_t versionnumber;
-  uint8_t versionnum[4];
+  String uid;
+//  char uid_array[];
   // if the first byte is 0x01 / on / true
   for(int i= 0;i<len; i++)
   {
@@ -75,22 +93,34 @@ void RFduinoBLE_onReceive(char *data, int len)
   }
   if (data[0])
   {
-          versionnumber = 5;
-          versionnum[0] = 5;
-          versionnumber = pn532element.getFirmwareVersion();
-          //RFduinoBLE.send(versionnum,4); // send out value 2 to inform about nfc detection    
-          RFduinoBLE.sendInt(versionnumber);
+        //versionnumber = 5;
+        //versionnumber = pn532element.getFirmwareVersion();
+        //RFduinoBLE.send((char*) &versionnumber,4);
     if (nfc.tagPresent())
-    {
-//        NfcTag tag = nfc.read();
-//        RFduinoBLE.send(1); // send out value 2 to inform about nfc detection
-//        tag.print();          
+    {      
+
+      NfcTag tag = nfc.read();
+      uid = tag.getUidString();
+      // uid_array = uid;       
+      Serial.print(uid);
+      bleSendString(uid);
+//    RFduinoBLE.send((char*)&uid,uid.length()); // send out value 2 to inform about nfc detection
+ //   RFduinoBLE.send(uid);
     }
   }
   else
   {
-    RFduinoBLE.send(0);
+    char string1[]="No tag found";
+    RFduinoBLE.send(string1,12);    
   }
 }
 
+void bleSendString(String sendstring) {
+  char chararray[sendstring.length()];
+  for(int i=0;i<sendstring.length();i++)
+  {
+    chararray[i] = sendstring.charAt(i);
+  }
+  RFduinoBLE.send(chararray,sendstring.length());  
+}
 
