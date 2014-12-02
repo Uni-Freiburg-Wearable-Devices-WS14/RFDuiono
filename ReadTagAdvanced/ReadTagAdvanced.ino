@@ -144,6 +144,11 @@ void RFduinoBLE_onReceive(char *data, int len)
       }
     }
   }
+  else
+  {
+    String string = String("NFC busy");
+    bleSendString(string);
+  }
 }
 
 // function to easily send strings over BLE
