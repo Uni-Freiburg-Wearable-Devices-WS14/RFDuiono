@@ -78,7 +78,7 @@ void loop(void) {
     }
   }
   // wait for next cycle of reading
-  delay(5000);
+  delay(2000);
 }
 
 void RFduinoBLE_onDisconnect()
