@@ -73,7 +73,7 @@ void loop(void) {
         tag.print();
     }
 */    
-    delay(5000);
+    delay(2000);
 }
 
 void RFduinoBLE_onDisconnect()
